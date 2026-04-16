@@ -1,6 +1,28 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import numpy as np
+import pandas as pd
+
+
+
+def engineer_features(df_long):
+    """
+    added sincos features and lag feature 
+
+    """
+    df = df_long.copy()
+
+    df['lag_1'] = df['volume_kwh'].shift(1)
+    df = df.dropna()
+
+    df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
+    df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
+
+    df['dow_sin'] = np.sin(2 * np.pi * df['day_of_week'] / 7)
+    df['dow_cos'] = np.cos(2 * np.pi * df['day_of_week'] / 7)
+
+    return df
+
 
 def train_model(df_long, model_type="Linear Regression"):
     df_long['lag_1'] = df_long['volume_kwh'].shift(1)
@@ -12,7 +34,7 @@ def train_model(df_long, model_type="Linear Regression"):
     df_long['dow_cos'] = np.cos(2 * np.pi * df_long['day_of_week'] / 7)
 
     X = df_long[['hour_sin', 'hour_cos',
-                 'dow_sin', 'dow_cos',
+            'dow_sin', 'dow_cos',
                  'month', 'is_weekend','lag_1']]
 
     y = df_long['volume_kwh']
@@ -32,4 +54,6 @@ def train_model(df_long, model_type="Linear Regression"):
 
     model.fit(X_train, y_train)
 
-    return model, X_test, y_test
+    feature_names = X.columns.tolist()
+
+    return model, X_train, X_test, y_train, y_test, feature_names
