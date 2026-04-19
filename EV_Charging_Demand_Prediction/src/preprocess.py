@@ -10,6 +10,9 @@ def preprocess_dataframe(df):
         var_name='TAZID',
         value_name='volume_kwh'
     )
+    
+    df_long['volume_kwh'] = df_long['volume_kwh'].fillna(0)
+    df_long['volume_kwh'] = df_long['volume_kwh'].apply(lambda x: max(0, x))
 
     df_long['hour'] = df_long['time'].dt.hour
     df_long['day_of_week'] = df_long['time'].dt.dayofweek
